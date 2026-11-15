@@ -38,6 +38,11 @@ export default function WorkingWithRemoteArrays(app: Express) {
     todos.push(newTodo);
     res.json(todos);
   };
+  const postNewTodo = (req: Request, res: Response) => {
+    const newTodo: Todo = { ...req.body, id: new Date().getTime() };
+    todos.push(newTodo);
+    res.json(newTodo);
+  };
   const removeTodo = (req: Request, res: Response) => {
     const { id } = req.params as { id: string };
     const todoIndex = todos.findIndex((t) => t.id === parseInt(id));
@@ -45,6 +50,26 @@ export default function WorkingWithRemoteArrays(app: Express) {
       todos.splice(todoIndex, 1);
     }
     res.json(todos);
+  };
+  const deleteTodo = (req: Request, res: Response) => {
+    const { id } = req.params as { id: string };
+    const todoIndex = todos.findIndex((t) => t.id === parseInt(id));
+    if (todoIndex === -1) {
+      res.status(404).json({ message: `Unable to delete Todo with ID ${id}` });
+      return;
+    }
+    todos.splice(todoIndex, 1);
+    res.sendStatus(200);
+  };
+  const updateTodo = (req: Request, res: Response) => {
+    const { id } = req.params as { id: string };
+    const todoIndex = todos.findIndex((t) => t.id === parseInt(id));
+    if (todoIndex === -1) {
+      res.status(404).json({ message: `Unable to update Todo with ID ${id}` });
+      return;
+    }
+    todos = todos.map((t) => (t.id === parseInt(id) ? { ...t, ...req.body } : t));
+    res.sendStatus(200);
   };
   const updateTodoTitle = (req: Request, res: Response) => {
     const { id, title } = req.params as { id: string; title: string };
@@ -78,4 +103,7 @@ export default function WorkingWithRemoteArrays(app: Express) {
   app.get("/lab5/todos/:id/description/:description", updateTodoDescription);
   app.get("/lab5/todos/:id", getTodoById);
   app.get("/lab5/todos", getTodos);
+  app.post("/lab5/todos", postNewTodo);
+  app.delete("/lab5/todos/:id", deleteTodo);
+  app.put("/lab5/todos/:id", updateTodo);
 }
